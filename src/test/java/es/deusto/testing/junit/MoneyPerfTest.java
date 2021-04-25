@@ -10,7 +10,18 @@ import es.deusto.testing.junit.MoneyBag;
 import org.junit.Before;
 import org.junit.Test;
 
-public class MoneyTest {
+import org.junit.Rule;
+import org.databene.contiperf.Required;
+import org.databene.contiperf.PerfTest;
+import org.databene.contiperf.junit.ContiPerfRule;
+import org.databene.contiperf.report.EmptyReportModule;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
+@PerfTest(invocations = 5)
+@Required(max = 1200, average = 250)
+public class MoneyPerfTest {
 	private Money f12CHF;
 	private Money f14CHF;
 	private Money f7USD;
@@ -18,12 +29,19 @@ public class MoneyTest {
 
 	private IMoney fMB1;
 	private IMoney fMB2;
+	
+	static Logger logger = Logger.getLogger(MoneyPerfTest.class.getName());
 
+	// If you use the EmptyReportModule, the report is not generated
+	//@Rule public ContiPerfRule rule = new ContiPerfRule(new EmptyReportModule());
+	@Rule public ContiPerfRule rule = new ContiPerfRule();
+	
 	public static junit.framework.Test suite() {
-		 return new JUnit4TestAdapter(MoneyTest.class);
+		 return new JUnit4TestAdapter(MoneyPerfTest.class);
 	}
 
 	@Before public void setUp() {
+		logger.info("Entering setUp");
 		f12CHF= new Money(12, "CHF");
 		f14CHF= new Money(14, "CHF");
 		f7USD= new Money( 7, "USD");
@@ -31,14 +49,21 @@ public class MoneyTest {
 
 		fMB1= MoneyBag.create(f12CHF, f7USD);
 		fMB2= MoneyBag.create(f14CHF, f21USD);
+		logger.info("Leaving setUp");
 	}
 	
-	@Test public void testBagMultiply() {
+	@Test 
+    @PerfTest(invocations = 1000, threads = 20)
+    @Required(max = 120, average = 30)
+	public void testBagMultiply() throws Exception {
+		logger.info("Starting testBagMultiply");
 		// {[12 CHF][7 USD]} *2 == {[24 CHF][14 USD]}
 		IMoney expected= MoneyBag.create(new Money(24, "CHF"), new Money(14, "USD"));
 		assertEquals(expected, fMB1.multiply(2)); 
 		assertEquals(fMB1, fMB1.multiply(1));
 		assertTrue(fMB1.multiply(0).isZero());
+		Thread.sleep(121);
+		logger.debug("Finishing testBagMultiply");
 	}
 	@Test public void testBagNegate() {
 		// {[12 CHF][7 USD]} negate == {[-12 CHF][-7 USD]}
