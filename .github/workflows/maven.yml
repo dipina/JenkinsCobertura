@@ -1,6 +1,6 @@
 # This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
-
+# Indicate this flag to avoid running performance tests continously: -DargLine="-Dcontiperf.active=false"
 name: Java CI with Maven
 
 on:
@@ -23,4 +23,4 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: ls -la && pwd && mvn test -DargLine="-Dcontiperf.active=false" 
+      run: ls -la && pwd && mvn test  
